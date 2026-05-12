@@ -3,8 +3,8 @@ import { useEffect, useState } from "react"
 import {
   doc,
   getDoc,
-  collection,
   addDoc,
+  collection,
 } from "firebase/firestore"
 
 import { db } from "../firebase"
@@ -12,22 +12,16 @@ import { db } from "../firebase"
 export default function Contact() {
 
   const [settings, setSettings] =
-    useState(null)
+    useState({})
 
-  // FORM STATES
-  const [name, setName] =
-    useState("")
+  const [formData, setFormData] =
+    useState({
+      name: "",
+      email: "",
+      message: "",
+    })
 
-  const [emailInput, setEmailInput] =
-    useState("")
-
-  const [message, setMessage] =
-    useState("")
-
-  const [loading, setLoading] =
-    useState(false)
-
-  // FETCH SETTINGS
+  // FETCH CONTACT SETTINGS
   useEffect(() => {
 
     const fetchSettings =
@@ -35,19 +29,21 @@ export default function Contact() {
 
         try {
 
-          const docRef = doc(
-            db,
-            "site_settings",
-            "main"
-          )
+          const docRef =
+            doc(
+              db,
+              "settings",
+              "contact"
+            )
 
           const docSnap =
             await getDoc(docRef)
 
           if (docSnap.exists()) {
 
-            setSettings(docSnap.data())
-
+            setSettings(
+              docSnap.data()
+            )
           }
 
         } catch (error) {
@@ -61,63 +57,45 @@ export default function Contact() {
 
   }, [])
 
+  // HANDLE INPUT
+  const handleChange = (e) => {
+
+    setFormData({
+      ...formData,
+      [e.target.name]:
+        e.target.value,
+    })
+  }
+
   // SEND MESSAGE
   const handleSubmit =
     async (e) => {
 
       e.preventDefault()
 
-      if (
-        !name ||
-        !emailInput ||
-        !message
-      ) {
-
-        alert(
-          "Fill all fields"
-        )
-
-        return
-      }
-
       try {
-
-        setLoading(true)
 
         await addDoc(
           collection(
             db,
             "messages"
           ),
-          {
-            name,
-            email:
-              emailInput,
-            message,
-            createdAt:
-              new Date(),
-          }
+          formData
         )
 
         alert(
-          "Message Sent 😎🔥"
+          "Message Sent Successfully 😎"
         )
 
-        setName("")
-        setEmailInput("")
-        setMessage("")
+        setFormData({
+          name: "",
+          email: "",
+          message: "",
+        })
 
       } catch (error) {
 
         console.log(error)
-
-        alert(
-          "Failed ❌"
-        )
-
-      } finally {
-
-        setLoading(false)
 
       }
     }
@@ -126,160 +104,156 @@ export default function Contact() {
 
     <section
       id="contact"
-      className="relative py-32 px-6 overflow-hidden"
+      className="relative py-32 px-6 bg-black text-white overflow-hidden"
     >
 
-      {/* GLOW */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,#0f3b82_0%,#000814_35%,#000000_75%)] opacity-70"></div>
+      {/* BACKGROUND GLOW */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-cyan-500/10 blur-[180px] rounded-full pointer-events-none"></div>
 
-      <div className="relative z-10 max-w-6xl mx-auto">
+      <div className="relative max-w-7xl mx-auto">
 
         {/* TOP */}
         <div className="text-center mb-20">
 
-          <p className="uppercase tracking-[10px] text-cyan-400 text-sm mb-5">
+          <p className="uppercase tracking-[10px] text-cyan-400 text-sm mb-6">
             Contact AXORA
           </p>
 
-          <h2 className="text-5xl md:text-7xl font-black">
-            Let’s Build
+          <h2 className="text-5xl md:text-7xl font-black leading-tight text-white">
+
+            Let’s Build{" "}
+
             <span className="italic text-cyan-400">
-              {" "}Something Great
+              Something Great
             </span>
+
           </h2>
 
         </div>
 
+        {/* GRID */}
         <div className="grid lg:grid-cols-2 gap-10">
 
           {/* LEFT */}
-          <div className="p-10 rounded-[35px] border border-white/10 bg-white/5 backdrop-blur-md">
+          <div className="rounded-[35px] border border-white/10 bg-white/5 backdrop-blur-md p-10">
 
-            <h3 className="text-3xl font-black mb-8">
+            <h3 className="text-4xl font-black mb-10">
               Contact Information
             </h3>
 
             <div className="space-y-6">
 
               {/* EMAIL */}
-              <a
-                href={`mailto:${settings?.email || ""}`}
-                className="block p-6 rounded-[25px] bg-black/40 border border-white/10"
-              >
+              <div className="bg-black/40 border border-white/10 rounded-[25px] p-6">
 
-                <p className="text-cyan-400 uppercase tracking-[4px] text-sm mb-2">
+                <p className="text-cyan-400 uppercase tracking-[5px] text-sm mb-3">
                   Email
                 </p>
 
-                <h4 className="text-xl font-bold">
-                  {settings?.email ||
+                <p className="text-xl font-semibold break-all">
+                  {settings.email ||
                     "No Email Added"}
-                </h4>
+                </p>
 
-              </a>
+              </div>
 
               {/* WHATSAPP */}
-              <a
-                href={`https://wa.me/${settings?.whatsapp || ""}`}
-                target="_blank"
-                className="block p-6 rounded-[25px] bg-black/40 border border-white/10"
-              >
+              <div className="bg-black/40 border border-white/10 rounded-[25px] p-6">
 
-                <p className="text-cyan-400 uppercase tracking-[4px] text-sm mb-2">
+                <p className="text-cyan-400 uppercase tracking-[5px] text-sm mb-3">
                   WhatsApp
                 </p>
 
-                <h4 className="text-xl font-bold">
-                  {settings?.whatsapp ||
+                <p className="text-xl font-semibold">
+                  {settings.whatsapp ||
                     "No WhatsApp Added"}
-                </h4>
+                </p>
 
-              </a>
+              </div>
 
               {/* FACEBOOK */}
-              <a
-                href={settings?.facebook || "#"}
-                target="_blank"
-                className="block p-6 rounded-[25px] bg-black/40 border border-white/10"
-              >
+              <div className="bg-black/40 border border-white/10 rounded-[25px] p-6">
 
-                <p className="text-cyan-400 uppercase tracking-[4px] text-sm mb-2">
+                <p className="text-cyan-400 uppercase tracking-[5px] text-sm mb-3">
                   Facebook
                 </p>
 
-                <h4 className="text-xl font-bold">
-                  AXORA Official
-                </h4>
+                <a
+                  href={
+                    settings.facebook
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xl font-semibold hover:text-cyan-400 transition break-all"
+                >
+                  {settings.facebook ||
+                    "No Facebook Added"}
+                </a>
 
-              </a>
+              </div>
 
             </div>
 
           </div>
 
           {/* RIGHT */}
-          <div className="p-10 rounded-[35px] border border-white/10 bg-white/5 backdrop-blur-md">
+          <form
+            onSubmit={handleSubmit}
+            className="rounded-[35px] border border-white/10 bg-white/5 backdrop-blur-md p-10"
+          >
 
-            <h3 className="text-3xl font-black mb-8">
+            <h3 className="text-4xl font-black mb-10">
               Send Message
             </h3>
 
-            <form
-              onSubmit={
-                handleSubmit
-              }
-              className="space-y-6"
-            >
+            <div className="space-y-6">
 
               <input
                 type="text"
+                name="name"
                 placeholder="Your Name"
-                value={name}
-                onChange={(e) =>
-                  setName(
-                    e.target.value
-                  )
+                value={formData.name}
+                onChange={
+                  handleChange
                 }
-                className="w-full bg-black/40 border border-white/10 rounded-[20px] px-6 py-5 outline-none text-white"
+                required
+                className="w-full bg-black/40 border border-white/10 rounded-[20px] px-6 py-5 outline-none text-white placeholder:text-slate-500 focus:border-cyan-400 transition"
               />
 
               <input
                 type="email"
+                name="email"
                 placeholder="Your Email"
-                value={emailInput}
-                onChange={(e) =>
-                  setEmailInput(
-                    e.target.value
-                  )
+                value={formData.email}
+                onChange={
+                  handleChange
                 }
-                className="w-full bg-black/40 border border-white/10 rounded-[20px] px-6 py-5 outline-none text-white"
+                required
+                className="w-full bg-black/40 border border-white/10 rounded-[20px] px-6 py-5 outline-none text-white placeholder:text-slate-500 focus:border-cyan-400 transition"
               />
 
               <textarea
-                rows="6"
+                name="message"
                 placeholder="Your Message"
-                value={message}
-                onChange={(e) =>
-                  setMessage(
-                    e.target.value
-                  )
+                rows="6"
+                value={formData.message}
+                onChange={
+                  handleChange
                 }
-                className="w-full bg-black/40 border border-white/10 rounded-[20px] px-6 py-5 outline-none text-white"
+                required
+                className="w-full bg-black/40 border border-white/10 rounded-[20px] px-6 py-5 outline-none text-white placeholder:text-slate-500 focus:border-cyan-400 transition resize-none"
               ></textarea>
 
               <button
                 type="submit"
-                disabled={loading}
-                className="px-10 py-5 rounded-full bg-cyan-400 text-black font-bold hover:scale-105 hover:bg-cyan-300 transition duration-300"
+                className="w-full py-5 rounded-full bg-cyan-400 text-black font-black text-lg hover:scale-[1.02] hover:bg-cyan-300 transition duration-300"
               >
-                {loading
-                  ? "Sending..."
-                  : "Send Message"}
+                Send Message
               </button>
 
-            </form>
+            </div>
 
-          </div>
+          </form>
 
         </div>
 
